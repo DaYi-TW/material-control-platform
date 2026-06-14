@@ -1,0 +1,50 @@
+[
+  {
+    "id": "msh-001",
+    "name": "高強度鋁合金支架",
+    "category": "結構組件",
+    "color": "#A5A9B4",
+    "basePrice": 1250,
+    "multiplier": 1.2,
+    "stock": 320,
+    "safetyStock": 100,
+    "location": "A-01-03",
+    "metadata": { "material": "Aluminum 6061", "weight": "1.5kg" }
+  },
+  {
+    "id": "msh-002",
+    "name": "強化玻璃視窗",
+    "category": "外部面板",
+    "color": "#1E293B",
+    "basePrice": 850,
+    "multiplier": 1.0,
+    "stock": 45,
+    "safetyStock": 60,
+    "location": "B-02-01",
+    "metadata": { "material": "Tempered Glass", "weight": "2.2kg" }
+  },
+  {
+    "id": "msh-003",
+    "name": "散熱模組風扇",
+    "category": "電子元件",
+    "color": "#FF4D4D",
+    "basePrice": 450,
+    "multiplier": 1.5,
+    "stock": 180,
+    "safetyStock": 150,
+    "location": "C-03-07",
+    "metadata": { "material": "PBT Plastic", "weight": "0.3kg" }
+  },
+  {
+    "id": "msh-004",
+    "name": "陽極氧化底座",
+    "category": "結構組件",
+    "color": "#2D3436",
+    "basePrice": 2100,
+    "multiplier": 2.0,
+    "stock": 12,
+    "safetyStock": 40,
+    "location": "A-04-02",
+    "metadata": { "material": "Steel", "weight": "5.0kg" }
+  }
+]

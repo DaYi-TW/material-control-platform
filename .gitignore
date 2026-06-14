@@ -1,0 +1,21 @@
+# 依賴
+node_modules/
+**/node_modules/
+
+# 建置產物
+dist/
+**/dist/
+*.tsbuildinfo
+
+# 環境變數 / 密鑰(一律不入庫)
+.env
+.env.*
+!.env.example
+*.zeabur.tmp
+
+# 編輯器 / 系統
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

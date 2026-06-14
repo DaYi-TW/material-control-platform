@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  :root {
+    --bg: #0e1013; --sidebar: #15171b; --panel: #16191e; --panel-2: #1b1f25;
+    --panel-3: #20252c; --border: #292e36; --border-soft: #21262d;
+    --text: #e7e9ec; --text-2: #98a0a9; --text-3: #656c75;
+    --accent: #e0823c; --accent-soft: rgba(224,130,60,0.15);
+    --ok: #54ad7f; --ok-soft: rgba(84,173,127,0.15);
+    --danger: #d96252; --danger-soft: rgba(217,98,82,0.15);
+    --track: #23282f;
+  }
+  [data-theme="light"] {
+    --bg: #f3f4f6; --panel: #ffffff; --panel-2: #f7f8f9;
+    --panel-3: #eef0f2; --border: #e3e5e8; --border-soft: #edeef0;
+    --text: #1a1d21; --text-2: #5d646c; --text-3: #8b9099;
+    --accent: #c9722b; --accent-soft: rgba(201,114,43,0.12);
+    --ok: #2f8f60; --ok-soft: rgba(47,143,96,0.11);
+    --danger: #c44a38; --danger-soft: rgba(196,74,56,0.10);
+    --track: #ebedef;
+  }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; border: 3px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</helmet>
+
+<div data-theme="{{ theme }}" style="height:100vh; display:flex; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); overflow:hidden; -webkit-font-smoothing:antialiased; --accent:{{ accent }}; --accent-soft:{{ accentSoft }}">
+
+  <!-- ============ SIDEBAR (always dark) ============ -->
+  <aside style="width:226px; flex-shrink:0; background:var(--sidebar); border-right:1px solid #23262c; display:flex; flex-direction:column; color:#c5cad1">
+    <div style="padding:16px 16px 14px; border-bottom:1px solid #23262c; display:flex; align-items:center; gap:11px">
+      <div style="width:30px; height:30px; border-radius:7px; background:#1f242b; border:1px solid #2c323a; display:grid; place-items:center; flex-shrink:0">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e0823c" stroke-width="1.7" stroke-linejoin="round"><path d="M12 2.5 3.5 7v10L12 21.5 20.5 17V7L12 2.5Z"/><path d="m3.5 7 8.5 4.6L20.5 7"/><path d="M12 11.6v9.9"/></svg>
+      </div>
+      <div style="line-height:1.25">
+        <div style="font-size:13.5px; font-weight:600; letter-spacing:0.01em; color:#eceef1">物料管理平台</div>
+        <div style="font-size:9.5px; font-weight:500; letter-spacing:0.16em; color:#6a7079; margin-top:1px">MATERIAL · WMS</div>
+      </div>
+    </div>
+
+    <nav style="padding:14px 10px; display:flex; flex-direction:column; gap:3px">
+      <div style="font-size:9.5px; font-weight:600; letter-spacing:0.13em; color:#5b616a; padding:0 8px 8px">工作區</div>
+
+      <button onClick="{{ goEditor }}" style="position:relative; width:100%; display:flex; align-items:center; gap:11px; padding:9px 11px; border:none; border-radius:7px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:500; text-align:left; background:{{ nav.editorBg }}; color:{{ nav.editorColor }}">
+        <span style="position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:3px; background:{{ nav.editorBar }}"></span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+        材質編輯器
+      </button>
+
+      <button onClick="{{ goWarehouse }}" style="position:relative; width:100%; display:flex; align-items:center; gap:11px; padding:9px 11px; border:none; border-radius:7px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:500; text-align:left; background:{{ nav.whBg }}; color:{{ nav.whColor }}">
+        <span style="position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:3px; background:{{ nav.whBar }}"></span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 9 12 4l9 5v8l-9 5-9-5V9Z"/><path d="m3 9 9 5 9-5"/><path d="M12 14v7"/></svg>
+        庫存看板 WMS
+        <span style="margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; color:#fff; background:var(--danger); padding:1px 6px; border-radius:5px; display:{{ nav.lowBadgeShow }}">{{ kpiLow }}</span>
+      </button>
+    </nav>
+
+    <div style="flex:1"></div>
+
+    <div style="padding:12px 14px; border-top:1px solid #23262c; display:flex; flex-direction:column; gap:11px">
+      <div style="display:flex; align-items:center; gap:9px">
+        <span style="width:7px; height:7px; border-radius:50%; background:var(--ok); animation:blink 2.4s ease-in-out infinite; flex-shrink:0"></span>
+        <div style="line-height:1.3">
+          <div style="font-size:11px; color:#bfc4cb; font-weight:500">後端已連線</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6a7079">localhost:4000 · {{ lastSync }}</div>
+        </div>
+      </div>
+      <button onClick="{{ toggleTheme }}" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px; border:1px solid #2c323a; border-radius:7px; background:#1b2027; color:#bfc4cb; cursor:pointer; font-family:inherit; font-size:11.5px; font-weight:500">
+        <span style="display:flex; align-items:center; gap:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="{{ themeIconPath }}"/><circle cx="12" cy="12" r="{{ themeIconR }}"/></svg>
+          {{ themeLabel }}
+        </span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; color:#6a7079">{{ themeCode }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden">
+
+    <!-- Top bar -->
+    <header style="height:56px; flex-shrink:0; border-bottom:1px solid var(--border); background:var(--panel); display:flex; align-items:center; justify-content:space-between; padding:0 18px">
+      <div style="display:flex; align-items:center; gap:11px; line-height:1.25; min-width:0">
+        <span style="font-size:10px; font-weight:600; letter-spacing:0.12em; color:var(--text-3); font-family:'IBM Plex Mono',monospace; flex-shrink:0">{{ pageCode }}</span>
+        <span style="width:1px; height:16px; background:var(--border); flex-shrink:0"></span>
+        <div style="min-width:0">
+          <div style="font-size:14.5px; font-weight:600; letter-spacing:0.01em; white-space:nowrap">{{ pageTitle }}</div>
+          <div style="font-size:11px; color:var(--text-3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ pageSub }}</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:9px">
+        <div style="display:flex; align-items:center; gap:7px; padding:6px 11px; border:1px solid var(--border); border-radius:7px; background:var(--panel-2); font-size:11.5px; color:var(--text-2)">
+          <span style="font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--text); font-size:12px">{{ partCount }}</span> SKU
+          <span style="width:1px; height:12px; background:var(--border)"></span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--accent); font-size:12px">{{ kpiValue }}</span>
+        </div>
+        <button onClick="{{ reload }}" style="display:flex; align-items:center; gap:7px; padding:7px 13px; border:1px solid var(--border); border-radius:7px; background:var(--panel); color:var(--text); cursor:pointer; font-family:inherit; font-size:12.5px; font-weight:500; white-space:nowrap; flex-shrink:0" style-hover="border-color:var(--accent); color:var(--accent)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v5h-5"/></svg>
+          重新載入
+        </button>
+      </div>
+    </header>
+
+    <!-- Scroll content -->
+    <main style="flex:1; overflow-y:auto; padding:16px 18px">
+
+      <!-- ================= EDITOR ================= -->
+      <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; flex-direction:column; gap:14px; max-width:1240px">
+        <div style="display:grid; grid-template-columns:312px 1fr; gap:14px; align-items:start">
+
+          <!-- Mesh list -->
+          <section style="background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden">
+            <div style="padding:11px 14px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between">
+              <span style="font-size:12.5px; font-weight:600">模型零件清單</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3)">{{ partCount }} 項</span>
+            </div>
+            <div style="max-height:432px; overflow-y:auto">
+              <sc-for list="{{ listRows }}" as="row" hint-placeholder-count="8">
+                <button onClick="{{ row.onClick }}" style="position:relative; width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 13px 9px 14px; border:none; border-bottom:1px solid var(--border-soft); cursor:pointer; font-family:inherit; text-align:left; background:{{ row.bg }}">
+                  <span style="position:absolute; left:0; top:0; bottom:0; width:2.5px; background:{{ row.bar }}"></span>
+                  <span style="min-width:0">
+                    <span style="display:block; font-size:13px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ row.name }}</span>
+                    <span style="display:block; font-size:10.5px; color:var(--text-3); margin-top:2px; letter-spacing:0.02em">{{ row.category }}</span>
+                  </span>
+                  <span style="display:flex; align-items:center; gap:9px; flex-shrink:0">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:var(--accent)">{{ row.lineTotalStr }}</span>
+                    <span style="width:12px; height:12px; border-radius:3px; box-shadow:inset 0 0 0 1px rgba(128,128,128,0.35); background:{{ row.color }}"></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+
+          <!-- Material editor -->
+          <section style="background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden">
+            <div style="padding:11px 14px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between">
+              <span style="font-size:12.5px; font-weight:600">材質與屬性編輯器</span>
+              <span style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ok); font-family:'IBM Plex Mono',monospace">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                已同步
+              </span>
+            </div>
+            <div style="padding:16px">
+              <div style="display:flex; align-items:center; gap:12px; padding-bottom:16px; border-bottom:1px solid var(--border-soft)">
+                <span style="width:30px; height:30px; border-radius:7px; box-shadow:inset 0 0 0 1px rgba(128,128,128,0.3); flex-shrink:0; background:{{ sel.color }}"></span>
+                <div style="line-height:1.3">
+                  <div style="font-size:15px; font-weight:600">{{ sel.name }}</div>
+                  <div style="font-size:11.5px; color:var(--text-3); margin-top:2px; font-family:'IBM Plex Mono',monospace">{{ sel.meta }}</div>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px">
+                <label style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; font-weight:600; letter-spacing:0.08em; color:var(--text-3); white-space:nowrap">材質顏色 · ALBEDO</span>
+                  <div style="display:flex; gap:8px">
+                    <input type="color" value="{{ sel.color }}" onInput="{{ onColor }}" style="width:42px; height:38px; padding:2px; border:1px solid var(--border); border-radius:7px; background:var(--panel-2); cursor:pointer">
+                    <input type="text" value="{{ sel.color }}" onInput="{{ onHex }}" maxlength="7" spellcheck="false" style="flex:1; min-width:0; padding:0 12px; border:1px solid var(--border); border-radius:7px; background:var(--panel-2); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:13px" style-focus="outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)">
+                  </div>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; font-weight:600; letter-spacing:0.08em; color:var(--text-3); white-space:nowrap">基礎單價 · BASE PRICE</span>
+                  <input type="number" min="0" step="10" value="{{ sel.basePrice }}" onInput="{{ onBasePrice }}" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:7px; background:var(--panel-2); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:13px" style-focus="outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)">
+                </label>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:9px; margin-top:18px">
+                <div style="display:flex; align-items:center; justify-content:space-between">
+                  <span style="font-size:10px; font-weight:600; letter-spacing:0.08em; color:var(--text-3); white-space:nowrap">材質複雜度加成 · MULTIPLIER</span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--accent)">{{ sel.multStr }}</span>
+                </div>
+                <input type="range" min="1" max="5" step="0.1" value="{{ sel.multiplier }}" onInput="{{ onMultiplier }}" style="width:100%; accent-color:var(--accent); cursor:pointer">
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-3); font-family:'IBM Plex Mono',monospace">
+                  <span>基礎 1.0×</span>
+                  <span>極高 5.0×</span>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:18px; padding-top:14px; border-top:1px solid var(--border-soft)">
+                <span style="font-size:11px; font-weight:600; letter-spacing:0.1em; color:var(--text-3)">即時小計 · LINE TOTAL</span>
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:var(--accent)">{{ sel.previewStr }}</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- BOM -->
+        <section style="background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden">
+          <div style="padding:11px 14px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between">
+            <span style="font-size:12.5px; font-weight:600">BOM 物料清單預估</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3)">{{ partCount }} 項</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="text-align:left; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">零件名稱</th>
+                <th style="text-align:left; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">色碼</th>
+                <th style="text-align:right; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">單價 × 加成</th>
+                <th style="text-align:right; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">小計</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ bomRows }}" as="row" hint-placeholder-count="8">
+                <tr onClick="{{ row.onClick }}" style="cursor:pointer; background:{{ row.bg }}">
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); font-size:13px; font-weight:500">{{ row.name }}</td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft)">
+                    <span style="display:flex; align-items:center; gap:8px">
+                      <span style="width:13px; height:13px; border-radius:3px; box-shadow:inset 0 0 0 1px rgba(128,128,128,0.35); background:{{ row.color }}"></span>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-3)">{{ row.colorLower }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-2)">{{ row.priceMult }}</td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); text-align:right; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--accent)">{{ row.lineTotalStr }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="display:flex; align-items:baseline; justify-content:flex-end; gap:14px; padding:14px 16px; border-top:1px solid var(--border)">
+            <span style="font-size:11px; font-weight:600; letter-spacing:0.1em; color:var(--text-3)">專案總估價 · GRAND TOTAL</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:600; color:var(--accent)">{{ grandStr }}</span>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <!-- ================= WAREHOUSE ================= -->
+      <sc-if value="{{ isWarehouse }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; flex-direction:column; gap:14px; max-width:1240px">
+
+        <!-- KPI row -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px">
+          <div style="background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px">
+            <div style="font-size:10px; font-weight:600; letter-spacing:0.11em; color:var(--text-3)">總料件數</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; margin-top:7px; letter-spacing:-0.01em">{{ kpiCount }}</div>
+            <div style="font-size:10.5px; color:var(--text-3); margin-top:3px">SKU 種類</div>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px">
+            <div style="font-size:10px; font-weight:600; letter-spacing:0.11em; color:var(--text-3)">庫存總量</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; margin-top:7px; letter-spacing:-0.01em">{{ kpiStock }}</div>
+            <div style="font-size:10.5px; color:var(--text-3); margin-top:3px">件 · 即時刷新</div>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px">
+            <div style="font-size:10px; font-weight:600; letter-spacing:0.11em; color:var(--text-3)">庫存總價值</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; margin-top:7px; color:var(--accent); letter-spacing:-0.01em">{{ kpiValue }}</div>
+            <div style="font-size:10.5px; color:var(--text-3); margin-top:3px">單價 × 加成 × 庫存</div>
+          </div>
+          <div style="background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px; border-color:{{ kpiLowBorder }}">
+            <div style="font-size:10px; font-weight:600; letter-spacing:0.11em; color:var(--text-3)">低於安全庫存</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; margin-top:7px; color:{{ kpiLowColor }}; letter-spacing:-0.01em">{{ kpiLow }}</div>
+            <div style="font-size:10.5px; color:var(--text-3); margin-top:3px">項需補貨</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1.7fr 1fr; gap:14px; align-items:start">
+          <!-- Category bars -->
+          <section style="background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden">
+            <div style="padding:11px 14px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between">
+              <span style="font-size:12.5px; font-weight:600">各分類庫存價值佔比</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3)">BY CATEGORY</span>
+            </div>
+            <div style="padding:16px; display:flex; flex-direction:column; gap:13px">
+              <sc-for list="{{ catRows }}" as="cat" hint-placeholder-count="6">
+                <div style="display:grid; grid-template-columns:78px 1fr auto; align-items:center; gap:12px">
+                  <span style="font-size:12px; font-weight:500; color:var(--text-2)">{{ cat.category }}</span>
+                  <span style="height:9px; background:var(--track); border-radius:5px; overflow:hidden">
+                    <span style="display:block; height:100%; background:var(--accent); border-radius:5px; transition:width 0.5s ease; width:{{ cat.widthPct }}"></span>
+                  </span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; min-width:74px; text-align:right; color:var(--text)">{{ cat.valueStr }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+
+          <!-- IoT live -->
+          <section style="background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; flex-direction:column">
+            <div style="padding:11px 14px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; gap:8px">
+              <span style="width:8px; height:8px; border-radius:50%; flex-shrink:0; background:{{ iot.dotColor }}; animation:{{ iot.dotAnim }}"></span>
+              <span style="font-size:12.5px; font-weight:600; white-space:nowrap">IoT 即時數據流</span>
+              <span style="margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; color:{{ iot.statusColor }}">{{ iot.statusText }}</span>
+            </div>
+            <div style="padding:14px; display:flex; flex-direction:column; gap:12px; flex:1">
+              <p style="margin:0; font-size:11.5px; line-height:1.6; color:var(--text-3)">感測器每 1.5 秒回報庫存異動,看板 KPI、圖表與明細即時刷新。</p>
+              <button onClick="{{ toggleIot }}" style="align-self:flex-start; display:flex; align-items:center; gap:8px; padding:7px 13px; border:1px solid var(--border); border-radius:7px; background:var(--panel-2); color:var(--text); cursor:pointer; font-family:inherit; font-size:12px; font-weight:500; white-space:nowrap" style-hover="border-color:var(--accent)">
+                <sc-if value="{{ iot.on }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></sc-if>
+                <sc-if value="{{ iot.off }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5Z"/></svg></sc-if>
+                {{ iot.btnLabel }}
+              </button>
+              <div style="border-top:1px solid var(--border-soft); padding-top:10px; display:flex; flex-direction:column; gap:1px">
+                <div style="font-size:9.5px; font-weight:600; letter-spacing:0.11em; color:var(--text-3); margin-bottom:6px">事件流 · EVENT LOG</div>
+                <sc-for list="{{ eventRows }}" as="ev" hint-placeholder-count="5">
+                  <div style="display:flex; align-items:center; gap:9px; padding:4px 0; font-family:'IBM Plex Mono',monospace; font-size:11px">
+                    <span style="color:var(--text-3)">{{ ev.time }}</span>
+                    <span style="color:var(--text-2); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'IBM Plex Sans',sans-serif">{{ ev.name }}</span>
+                    <span style="font-weight:600; color:{{ ev.color }}">{{ ev.deltaStr }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Inventory table -->
+        <section style="background:var(--panel); border:1px solid var(--border); border-radius:8px; overflow:hidden">
+          <div style="padding:11px 14px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between">
+            <span style="font-size:12.5px; font-weight:600; white-space:nowrap">庫存明細 · INVENTORY</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-3)">{{ partCount }} 項</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="text-align:left; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">料件</th>
+                <th style="text-align:left; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">儲位</th>
+                <th style="text-align:right; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">庫存量</th>
+                <th style="text-align:left; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border); width:120px">水位</th>
+                <th style="text-align:right; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">安全庫存</th>
+                <th style="text-align:right; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">庫存價值</th>
+                <th style="text-align:left; font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-3); padding:9px 14px; border-bottom:1px solid var(--border)">狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ invRows }}" as="inv" hint-placeholder-count="8">
+                <tr style="background:{{ inv.rowBg }}">
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); font-size:13px">
+                    <span style="display:flex; align-items:center; gap:9px">
+                      <span style="width:11px; height:11px; border-radius:3px; box-shadow:inset 0 0 0 1px rgba(128,128,128,0.35); flex-shrink:0; background:{{ inv.color }}"></span>
+                      <span style="font-weight:500">{{ inv.name }}</span>
+                      <span style="font-size:10.5px; color:var(--text-3)">{{ inv.category }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-3)">{{ inv.location }}</td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); text-align:right; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:{{ inv.stockColor }}">{{ inv.stock }}</td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft)">
+                    <span style="display:block; height:7px; background:var(--track); border-radius:4px; overflow:hidden">
+                      <span style="display:block; height:100%; border-radius:4px; transition:width 0.4s ease; background:{{ inv.levelColor }}; width:{{ inv.levelPct }}"></span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-3)">{{ inv.safety }}</td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft); text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text)">{{ inv.valueStr }}</td>
+                  <td style="padding:9px 14px; border-bottom:1px solid var(--border-soft)">
+                    <span style="display:inline-flex; align-items:center; font-size:9.5px; font-weight:600; letter-spacing:0.06em; padding:2px 8px; border-radius:5px; background:{{ inv.tagBg }}; color:{{ inv.tagColor }}">{{ inv.tagLabel }}</span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </section>
+      </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'dark' | 'light'&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'editor',
+    theme: null,
+    selectedId: 'p1',
+    iotOn: true,
+    events: [],
+    lastSync: '',
+    parts: [
+      { id:'p1',  name:'Chassis Base Frame',  category:'結構件', color:'#3A4452', basePrice:1200, multiplier:1.4, stock:340,  safetyStock:120, location:'A-01-03', material:'鋁合金 6061', weight:'2.40kg' },
+      { id:'p2',  name:'Bearing Housing',     category:'機構件', color:'#6B7280', basePrice:480,  multiplier:2.2, stock:88,   safetyStock:100, location:'B-02-07', material:'不鏽鋼 304', weight:'0.65kg' },
+      { id:'p3',  name:'Servo Mount Bracket', category:'機構件', color:'#C0C4CC', basePrice:320,  multiplier:1.8, stock:210,  safetyStock:80,  location:'B-03-01', material:'鋁合金 7075', weight:'0.38kg' },
+      { id:'p4',  name:'Drive Gear 42T',      category:'傳動件', color:'#8A6D3B', basePrice:260,  multiplier:3.1, stock:150,  safetyStock:60,  location:'C-01-04', material:'滲碳鋼', weight:'0.22kg' },
+      { id:'p5',  name:'Controller PCB',      category:'電子件', color:'#1F6B4A', basePrice:890,  multiplier:2.6, stock:64,   safetyStock:90,  location:'D-05-02', material:'FR-4', weight:'0.12kg' },
+      { id:'p6',  name:'Power Connector',     category:'電子件', color:'#B5852A', basePrice:75,   multiplier:1.5, stock:540,  safetyStock:200, location:'D-02-09', material:'黃銅鍍鎳', weight:'0.04kg' },
+      { id:'p7',  name:'Hydraulic Cylinder',  category:'液壓件', color:'#404A55', basePrice:1450, multiplier:2.0, stock:42,   safetyStock:50,  location:'E-01-01', material:'鍍鉻鋼', weight:'3.10kg' },
+      { id:'p8',  name:'O-Ring Seal Kit',     category:'密封件', color:'#2D2D33', basePrice:28,   multiplier:1.2, stock:1280, safetyStock:400, location:'F-04-11', material:'NBR 丁腈橡膠', weight:'0.01kg' },
+      { id:'p9',  name:'Cooling Fan 80mm',    category:'散熱件', color:'#5B6168', basePrice:110,  multiplier:1.6, stock:320,  safetyStock:120, location:'D-06-03', material:'PBT 塑膠', weight:'0.09kg' },
+      { id:'p10', name:'Sensor Array Module', category:'電子件', color:'#285E8E', basePrice:640,  multiplier:2.9, stock:96,   safetyStock:70,  location:'D-04-06', material:'複合材料', weight:'0.15kg' },
+      { id:'p11', name:'Linear Rail 300mm',   category:'傳動件', color:'#9AA0A6', basePrice:380,  multiplier:1.9, stock:175,  safetyStock:80,  location:'C-03-08', material:'軸承鋼', weight:'0.85kg' },
+      { id:'p12', name:'End Cap Cover',       category:'結構件', color:'#44494F', basePrice:45,   multiplier:1.3, stock:620,  safetyStock:200, location:'A-05-12', material:'ABS 塑膠', weight:'0.06kg' },
+    ],
+  };
+
+  componentDidMount() {
+    this.setState({ lastSync: this.now() });
+    this.timer = window.setInterval(() => {
+      if (!this.state.iotOn) return;
+      const parts = this.state.parts.slice();
+      const events = this.state.events.slice();
+      const picks = 1 + Math.floor(Math.random() * 2);
+      for (let k = 0; k < picks; k++) {
+        const idx = Math.floor(Math.random() * parts.length);
+        const p = parts[idx];
+        const delta = Math.floor(Math.random() * 17) - 8;
+        if (delta === 0) continue;
+        const next = Math.max(0, p.stock + delta);
+        parts[idx] = { ...p, stock: next };
+        events.unshift({ time: this.now(), name: p.name, delta });
+      }
+      this.setState({ parts, events: events.slice(0, 6), lastSync: this.now() });
+    }, 1500);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  now() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  lineTotal(base, mult) { return Math.round(base * mult * 100) / 100; }
+  fmt(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
+
+  update(id, patch) {
+    const parts = this.state.parts.map((p) => p.id === id ? { ...p, ...patch } : p);
+    this.setState({ parts });
+  }
+
+  renderVals() {
+    const theme = this.state.theme || this.props.theme || 'dark';
+    const isEditor = this.state.screen === 'editor';
+    const parts = this.state.parts;
+    const selectedId = this.state.selectedId;
+    const accent = this.props.accent || '';
+    const accentSoft = accent ? this.hexToRgba(accent, 0.15) : '';
+
+    const lowCount = parts.filter((p) => p.stock < p.safetyStock).length;
+    const sel = parts.find((p) => p.id === selectedId) || parts[0];
+
+    // nav styling
+    const navOn = { bg: 'var(--accent-soft)', color: 'var(--accent)', bar: 'var(--accent)' };
+    const navOff = { bg: 'transparent', color: '#aeb4bc', bar: 'transparent' };
+    const e = isEditor ? navOn : navOff;
+    const w = isEditor ? navOff : navOn;
+
+    // editor: list + bom rows
+    const mkRowStyle = (p) => p.id === selectedId
+      ? { bg: 'var(--accent-soft)', bar: 'var(--accent)' }
+      : { bg: 'transparent', bar: 'transparent' };
+    const listRows = parts.map((p) => {
+      const s = mkRowStyle(p);
+      return { id:p.id, name:p.name, category:p.category, color:p.color,
+        lineTotalStr: this.fmt(this.lineTotal(p.basePrice, p.multiplier)),
+        bg: s.bg, bar: s.bar, onClick: () => this.setState({ selectedId: p.id }) };
+    });
+    const bomRows = parts.map((p) => {
+      const s = mkRowStyle(p);
+      return { id:p.id, name:p.name, color:p.color, colorLower:p.color.toLowerCase(),
+        priceMult: `${this.fmt(p.basePrice)} ×${p.multiplier.toFixed(1)}`,
+        lineTotalStr: this.fmt(this.lineTotal(p.basePrice, p.multiplier)),
+        bg: s.bg, onClick: () => this.setState({ selectedId: p.id }) };
+    });
+    const grandStr = this.fmt(parts.reduce((a, p) => a + this.lineTotal(p.basePrice, p.multiplier), 0));
+
+    const selVm = {
+      name: sel.name, color: sel.color, basePrice: sel.basePrice, multiplier: sel.multiplier,
+      meta: `${sel.category} · ${sel.material} · ${sel.weight}`,
+      multStr: sel.multiplier.toFixed(1) + '×',
+      previewStr: this.fmt(this.lineTotal(sel.basePrice, sel.multiplier)),
+    };
+
+    // warehouse KPIs
+    const totalStock = parts.reduce((a, p) => a + p.stock, 0);
+    const invValue = parts.reduce((a, p) => a + this.lineTotal(p.basePrice, p.multiplier) * p.stock, 0);
+
+    // category breakdown
+    const map = new Map();
+    for (const p of parts) {
+      const cur = map.get(p.category) || 0;
+      map.set(p.category, cur + this.lineTotal(p.basePrice, p.multiplier) * p.stock);
+    }
+    const cats = [...map.entries()].map(([category, value]) => ({ category, value })).sort((a, b) => b.value - a.value);
+    const maxCat = Math.max(1, ...cats.map((c) => c.value));
+    const catRows = cats.map((c) => ({ category: c.category, valueStr: this.fmt(c.value), widthPct: (c.value / maxCat * 100).toFixed(1) + '%' }));
+
+    // inventory rows
+    const invRows = parts.map((p) => {
+      const low = p.stock < p.safetyStock;
+      const ratio = p.safetyStock <= 0 ? 1 : Math.min(1, p.stock / (p.safetyStock * 2));
+      return { id:p.id, name:p.name, category:p.category, color:p.color, location:p.location,
+        stock:p.stock, safety:p.safetyStock,
+        valueStr: this.fmt(this.lineTotal(p.basePrice, p.multiplier) * p.stock),
+        levelPct: (ratio * 100).toFixed(0) + '%',
+        levelColor: low ? 'var(--danger)' : 'var(--ok)',
+        stockColor: low ? 'var(--danger)' : 'var(--text)',
+        rowBg: low ? 'var(--danger-soft)' : 'transparent',
+        tagLabel: low ? '需補貨' : '正常',
+        tagBg: low ? 'var(--danger-soft)' : 'var(--ok-soft)',
+        tagColor: low ? 'var(--danger)' : 'var(--ok)' };
+    });
+
+    const eventRows = this.state.events.map((ev) => ({
+      time: ev.time, name: ev.name,
+      deltaStr: (ev.delta > 0 ? '+' : '') + ev.delta,
+      color: ev.delta > 0 ? 'var(--ok)' : 'var(--danger)',
+    }));
+
+    const iotOn = this.state.iotOn;
+
+    return {
+      theme, accent, accentSoft,
+      isEditor, isWarehouse: !isEditor,
+      goEditor: () => this.setState({ screen: 'editor' }),
+      goWarehouse: () => this.setState({ screen: 'warehouse' }),
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      reload: () => this.setState({ lastSync: this.now() }),
+      nav: {
+        editorBg: e.bg, editorColor: e.color, editorBar: e.bar,
+        whBg: w.bg, whColor: w.color, whBar: w.bar,
+        lowBadgeShow: lowCount > 0 ? 'inline-block' : 'none',
+      },
+      lastSync: this.state.lastSync,
+      themeLabel: theme === 'dark' ? '深色模式' : '淺色模式',
+      themeCode: theme === 'dark' ? 'DARK' : 'LIGHT',
+      themeIconPath: theme === 'dark'
+        ? 'M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z'
+        : 'M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeIconR: theme === 'dark' ? 0 : 4,
+      pageCode: isEditor ? 'MAT-EDIT' : 'WMS-IOT',
+      pageTitle: isEditor ? '材質與屬性編輯器' : '庫存即時看板',
+      pageSub: isEditor ? '編輯零件材質、單價與複雜度加成，即時回算 BOM' : '感測器即時回報庫存異動，監控料件水位與補貨',
+      partCount: parts.length,
+      // editor
+      listRows, bomRows, grandStr, sel: selVm,
+      onColor: (ev) => this.update(sel.id, { color: ev.target.value.toUpperCase() }),
+      onHex: (ev) => { const v = ev.target.value.trim().toUpperCase(); if (/^#[0-9A-F]{6}$/.test(v)) this.update(sel.id, { color: v }); },
+      onBasePrice: (ev) => this.update(sel.id, { basePrice: Math.max(0, Number(ev.target.value) || 0) }),
+      onMultiplier: (ev) => this.update(sel.id, { multiplier: Number(ev.target.value) }),
+      // warehouse
+      kpiCount: parts.length, kpiStock: totalStock.toLocaleString(),
+      kpiValue: this.fmt(invValue), kpiLow: lowCount,
+      kpiLowColor: lowCount > 0 ? 'var(--danger)' : 'var(--text)',
+      kpiLowBorder: lowCount > 0 ? 'var(--danger)' : 'var(--border)',
+      catRows, invRows, eventRows,
+      toggleIot: () => this.setState({ iotOn: !iotOn }),
+      iot: {
+        dotColor: iotOn ? 'var(--ok)' : 'var(--text-3)',
+        dotAnim: iotOn ? 'blink 1.6s ease-in-out infinite' : 'none',
+        statusText: iotOn ? 'LIVE' : 'PAUSED',
+        statusColor: iotOn ? 'var(--ok)' : 'var(--text-3)',
+        btnLabel: iotOn ? '暫停資料流' : '啟動資料流',
+        on: iotOn, off: !iotOn,
+      },
+    };
+  }
+
+  hexToRgba(hex, a) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+    if (!m) return '';
+    const n = parseInt(m[1], 16);
+    return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+  }
+}
+</script>
+</body>
+</html>
