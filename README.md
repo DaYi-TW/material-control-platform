@@ -37,6 +37,49 @@ KPI、分類庫存長條圖,與後端 SSE 推播的 IoT 事件流:
 
 ---
 
+## 專案講解(審查導覽)
+
+> 給 reviewer 的快速導覽:這個專案在解什麼、架構怎麼切、關鍵設計決策為何如此。每段都連到對應的程式碼與 [`ANSWERS.md`](./ANSWERS.md) 題目,細節不在此重述。
+
+### 它解決的問題
+
+考題核心是:**三個沒有父子關係的兄弟元件(清單 / 編輯器 / BOM)如何共享同一份零件狀態,並在任一處編輯時即時同步另外兩處**。我把這份「即時同步」延伸成兩個視角共用同一份資料——材質編輯器(估價視角)與 WMS / IoT 看板(倉儲視角),用來展示同一個 store 餵不同畫面,以及「即時數據應用」。
+
+### 一句話架構
+
+```
+瀏覽器 ──REST(JSON)──▶ Express ──Mongoose──▶ MongoDB
+   ▲                                              │
+   └──────────── SSE 推播(庫存異動)◀────────────┘
+```
+
+前端三區塊都只跟 **單一 Pinia store** 對話;後端是 IoT 即時數據的真實來源,透過 SSE 單向推播。
+
+### 關鍵設計決策(為什麼這樣選)
+
+| 決策 | 怎麼做 | 為什麼 |
+|---|---|---|
+| **單一狀態來源** | 三元件全部讀寫 `stores/parts.ts`,不走 props/events | 兄弟元件用 prop drilling 會維護地獄;store + Vue reactivity 讓改一處三處自動重繪 → [ANSWERS 第一題](./ANSWERS.md) |
+| **拖曳不卡** | slider `input` 只改本地值(同步、輕量),持久化用 **keyed debounce(300ms)** 合併 | 把「畫面回饋」與「昂貴的 API 寫入」解耦,拖曳維持 60fps、不洪水請求 → [ANSWERS 第二題](./ANSWERS.md) |
+| **樂觀更新 + 回滾** | 先套本地 → 背景送 PATCH → 失敗還原 `lastCommitted` 快照並標 `error` | 網路延遲不影響操作手感,失敗也不會留下假資料 → [ANSWERS 第四題](./ANSWERS.md) |
+| **價格不入庫** | `lineTotal = basePrice × multiplier` 為計算值,前後端共用 `lib/pricing.ts` | 衍生值以計算取代儲存,避免清單 / 編輯器 / BOM 三處數字漂移 |
+| **即時數據用 SSE** | 後端模擬器寫 DB + `EventEmitter` 廣播;前端 `EventSource` 訂閱 | 單向推播正對應「感測器回報」;原生自動重連、免額外套件;落庫所以重整保留、多分頁同步 → [ANSWERS 第四題 (c)](./ANSWERS.md) |
+| **應對上萬筆** | 後端 `skip/limit` 分頁 + DB 端 `$sum` 聚合算總價;前端預留虛擬滾動 | 前端永遠不必為了顯示總價而下載全部資料 → [ANSWERS 第五題](./ANSWERS.md) |
+
+### 三個我會特別請 reviewer 看的檔案
+
+- **`backend/src/models/Part.ts`** — Mongoose schema 本身就是問答題「數據建模」的解答:型別 / `required` / 正規表示式驗證(`color` 限 `#RRGGBB`)/ `id` unique 索引 / `category` 索引 / `metadata` 嵌入子文件。
+- **`frontend/src/stores/parts.ts`** — 整個前端的心臟:單一狀態來源、樂觀更新、keyed debounce、失敗回滾、SSE 事件套用,全部集中在這。
+- **`backend/src/lib/iotBus.ts` + `frontend/src/lib/iotStream.ts`** — SSE 的兩端,展示「後端推、前端訂閱」的即時數據鏈路。
+
+### 邊界與取捨(誠實說明)
+
+- IoT 資料是**後端模擬器**產生(非真實感測器),但走的是真實的「寫 DB → SSE 廣播 → 前端套用」路徑;要接真實來源只需替換 `iotBus.ts` 的資料源。
+- 虛擬滾動為**設計層面預留**(後端分頁與聚合已實作),種子僅 4 筆,未實際掛上 windowing 套件。
+- 進程內 `EventEmitter` 廣播在單實例可用;水平擴展時需換成 Redis pub/sub(已記於 ANSWERS)。
+
+---
+
 ## 專案結構
 
 ```
