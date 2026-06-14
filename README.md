@@ -33,7 +33,7 @@ KPI、分類庫存長條圖,與後端 SSE 推播的 IoT 事件流:
 | 資料庫 | MongoDB |
 | 部署 | Zeabur(前端、後端、MongoDB 各一個服務) |
 
-> 實作需求與問答題見 [`proposal.md`](./proposal.md);問答題解答見 [`ANSWERS.md`](./ANSWERS.md)。
+> 功能與操作說明見 [`GUIDE.md`](./GUIDE.md);實作需求與問答題見 [`proposal.md`](./proposal.md);問答題解答見 [`ANSWERS.md`](./ANSWERS.md)。
 
 ---
 
